@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddDbContext<CinemaBot.DataLayer.TelegramBotContext>(options =>
-    options.UseNpgsql("Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=telegram_bot;"));
+    options.UseNpgsql("Host=trolley.proxy.rlwy.net;Port=15751;Database=railway;Username=postgres;Password=ZOnISSUgGZrHExeMaSmaYNbJbPTQqkHi;"));
 
 var token = builder.Configuration.GetValue("BotToken", string.Empty);
 builder.Services.AddSingleton(p => new TelegramBotClient(token));
