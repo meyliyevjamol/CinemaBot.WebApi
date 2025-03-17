@@ -138,8 +138,8 @@ public partial class BotUpdateHandler : IUpdateHandler
                 chatId: update.Message.Chat.Id,
                 text: $"✅ Xabar saqlandi! Kalit: `{key}`",
                 parseMode: ParseMode.Markdown);
-
-            await UserActionEndedAsync(userState, _context);
+            userState.ForAddKey = false;
+            await _context.SaveChangesAsync();
         }
         else if (user != null && userState.ForAddChannel)
         {
@@ -174,12 +174,12 @@ public partial class BotUpdateHandler : IUpdateHandler
                     foreach (var admin in admins)
                     {
                         await botClient.SendTextMessageAsync(
-                        chatId: message.Chat.Id,
+                        chatId: admin.ChatId,
                         text: $"📌 Foydalanuvchilarga xabar yuborildi. ID: {update.Message.From.Id} - {user.FullName}",
                         parseMode: ParseMode.Markdown);
                     }
 
-                    await UserActionEndedAsync(userState, _context);
+                    userState.ForAllUserMessage = false;
                     await _context.SaveChangesAsync();
                 }
                 else if (userState.ForAddFilm)
@@ -324,7 +324,7 @@ public partial class BotUpdateHandler : IUpdateHandler
         var userState = await _context.UserActionStates.FirstOrDefaultAsync(s => s.UserId == user.Id);
         if (user != null && user.IsAdmin)
         {
-            userState.ForAddFilm = true;
+            userState.ForAllUserMessage = true;
             await _context.SaveChangesAsync(); // Foydalanuvchidan `ChatId` kutamiz
 
             await botClient.SendTextMessageAsync(
@@ -371,7 +371,8 @@ public partial class BotUpdateHandler : IUpdateHandler
                     chatId: targetChatId,
                     text: "✅ Sizga admin ruxsatlari berildi! /menu ni bosing.");
 
-                await UserActionEndedAsync(userState, _context);
+                userState.ForAddAdmin = false;
+                await _context.SaveChangesAsync();
 
             }
             else
@@ -537,7 +538,7 @@ public partial class BotUpdateHandler : IUpdateHandler
 
             await botClient.SendTextMessageAsync(
                 chatId: update.Message.Chat.Id,
-                text: "📌 Kanal qo‘shish uchun kanalning `@username` ni yuboring:");
+                text: "📌 Kanal qo‘shish uchun kanalning `username` ni yuboring: @user_name ");
         }
     }
 
@@ -595,7 +596,8 @@ public partial class BotUpdateHandler : IUpdateHandler
                     text: $"✅ `{username}` kanali qo‘shildi! `Chat ID: {channelId}`",
                     parseMode: ParseMode.Markdown);
 
-                await UserActionEndedAsync(userState,_context);
+                userState.ForAddChannel = false;
+                await _context.SaveChangesAsync();
 
             }
             catch (Exception ex)
@@ -663,13 +665,6 @@ public partial class BotUpdateHandler : IUpdateHandler
             );
         }
     }
-    public async Task UserActionEndedAsync(UserActionState action, TelegramBotContext _context)
-    {
-        action.ForAddAdmin = false;
-        action.ForAddChannel = false;
-        action.ForAddKey = false;
-        action.ForAddFilm = false;
-        await _context.SaveChangesAsync();
-    }
+   
 
 }
